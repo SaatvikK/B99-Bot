@@ -28,3 +28,44 @@ let prefix = data["Prefix"];
 const MongoUsername = process.env.MONGO_USERNAME;
 const MongoPassword = process.env.MONGO_PASSWORD;
 const uri = "mongodb+srv://" + MongoUsername + ":" + MongoPassword + "@testcluster.8mz1j.mongodb.net/BrooklynNineNine?retryWrites=true&w=majority";
+
+//Query Mongo for bulk commands
+async function mongoQuery(uri) {
+  console.log("async fcuntion")
+  const database = new MongoClient(uri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+  try {
+    await database.connect();
+    const TopicsCollection = await database.db("BrooklynNineNine").collection("topics");
+    const WinningNumsCollection = await database.db("BrooklynNineNine").collection("Cupcakes");
+    const ShopCollection = await database.db("BrooklynNineNine").collection("shop");
+    const HoltGameCollection = await database.db("BrooklynNineNine").collection("RayQuotes");
+    return [
+      await TopicsCollection.find({}).toArray(), 
+      await WinningNumsCollection.findOne({"identifier":1}), 
+      await ShopCollection.find({}).toArray(),
+      await HoltGameCollection.find({}).toArray()
+    ];
+  } catch(e) {
+    console.log(e)
+  }
+  finally { database.close(); }
+}
+
+let [topics, cupcakes, WinningNums, shop, RayQuotes] = [null, null, null, null, null];
+
+mongoQuery(uri).catch(console.dir).then(results => { 
+  [topics, WinningNums, shop, RayQuotes] = [results[0], results[1], results[2], results[3]]; 
+});
+
+//Commands Collection Client
+client.commands = new Collection();
+const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+
+for (const file of commandFiles) {
+  const command = require(`./commands/${file}`);
+  client.commands.set(command.name, command);
+}
+
