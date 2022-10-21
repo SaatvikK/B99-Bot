@@ -18,6 +18,11 @@ const version = "v6";
 const OldVersion = "v5.0.1";
 const colour = '#F8E71C';
 const footer = "Meep Morp Robot " + version + " | /r/brooklynninenine Official Discord";
+const EmbedStuff = {
+  "version": version,
+  "colour": colour,
+  "footer": footer
+};
 
 //=========== Prefix Stuff ===========\\
 const data = JSON.parse(fs.readFileSync("./JSONs/general.json", "utf8"));
@@ -68,4 +73,13 @@ for (const file of commandFiles) {
   const command = require(`./commands/${file}`);
   client.commands.set(command.name, command);
 }
+
+
+//On interaction event (e.g Buttons) ------------------------------
+client.on('interactionCreate', interaction => {
+   const InterCreate = require("./events/InterCreate").onInteraction
+   InterCreate(interaction, EmbedStuff);
+});
+
+
 

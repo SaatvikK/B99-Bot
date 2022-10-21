@@ -1,10 +1,9 @@
-//On interaction event (e.g Buttons) ------------------------------
-client.on('interactionCreate', interaction => {
+function onInteractionFunc(interaction, EmbedStuff) {
   if(interaction.isButton()) {
     if(interaction.customId === "real" || interaction.customId === "fake") {
       // If the button is either a "Real Ray" or "Fake Ray" button.
       // Get data from JSON.
-      const questiondata = JSON.parse(fs.readFileSync("./ray-db.json", "utf8"))
+      const questiondata = JSON.parse(fs.readFileSync("./jsons/ray-db.json", "utf8"))
       let answer = questiondata["answer"].toLowerCase();
       let user = questiondata["user"];
       if(interaction.user.id === user) {
@@ -37,10 +36,9 @@ client.on('interactionCreate', interaction => {
             "https://media.discordapp.net/attachments/930396635773681664/984769221055635496/IMG_3178.webp",
           ];
           // Selecting a random gif.
-          let yayGif = yay[Math.floor(Math.random() * yay.length)];
-          let sadGif = bad[Math.floor(Math.random() * bad.length)];
+          let [yayGif, sadGif] = [yay[Math.floor(Math.random() * yay.length)], bad[Math.floor(Math.random() * bad.length)]];
+          const msg = interaction.message;
           if(interaction.customId == answer) { // If answer is correct
-            let msg = interaction.message;
             msg.edit({
               embeds: [
                 {
@@ -57,8 +55,8 @@ client.on('interactionCreate', interaction => {
 
             // Update the user's points in mongo db (PrevPoints + 1). If they aren't found in the database, a document will be created with the values given (this is the "upsert" value). If they are found, the document's data will be updated.
             await RayPointsCollection.findOneAndUpdate({ "UserID": user }, { $set: { "UserID": user, "Points": parseInt(PrevPoints) + 1 } }, { upsert: true });
+          
           } else { // Answer incorrect
-            let msg = interaction.message
             msg.edit({
               embeds: [
                 {
@@ -86,7 +84,7 @@ client.on('interactionCreate', interaction => {
         }());
       } else {
         // If the user clicking the button isn't the same user who used the command, send this ephemeral message.
-        interaction.reply({ content: `Whoops! This question wasn’t made for you, but for <@!${user}>! You can play yourself by using the \`>holtgame\` command!`, ephemeral: true })
+        interaction.reply({ content: `Whoops! This question wasn't made for you, but for <@!${user}>! You can play yourself by using the \`>holtgame\` command!`, ephemeral: true })
       }
     }
   } else if(interaction.isSelectMenu() == true) {
@@ -121,7 +119,7 @@ client.on('interactionCreate', interaction => {
               GenInfo.links.splice(index, 1);
             ConfigUpdate = { $set: { links: GenInfo.links } };
           break;
-         
+        
           default:
             return interaction.update({ content: "[Interaction Collection] Type (arg 1) is not valid. Type must be one of: `bio`, `image`, `words`, or `links`. " });
           break;
@@ -134,5 +132,9 @@ client.on('interactionCreate', interaction => {
         });
       });
     }
-  }  
-});
+  }
+}
+
+module.exports = {
+  onInteraction: onInteractionFunc
+};
