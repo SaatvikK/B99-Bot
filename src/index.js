@@ -77,9 +77,13 @@ for (const file of commandFiles) {
 
 //On interaction event (e.g Buttons) ------------------------------
 client.on('interactionCreate', interaction => {
-   const InterCreate = require("./events/InterCreate").onInteraction
+   const InterCreate = require("./events/InterCreate").onInteraction;
    InterCreate(interaction, EmbedStuff);
 });
 
+client.on('messageCreate', msg => {
+  const MsgCreate = require("./events/MsgCreate").onMessage;
+  MsgCreate(client, msg, EmbedStuff, prefix);
+})
 
 
